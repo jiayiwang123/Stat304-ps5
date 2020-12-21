@@ -1,0 +1,136 @@
+---
+title: "MODELLING THE CURE RATE OF AN INFECTIOUS DISEASE (TUBERCULOSIS)"
+Author: "Yu Yuan"
+date: "19/12/2020"
+output: html_document
+---
+Data Clearing
+```{r}
+## Import Data
+u1=read.csv("tb_hivpatientdata.csv", header = TRUE)
+head(u1)
+data=na.omit(u1)# omit the missing values
+attach(data)
+
+
+```
+Descriptive Analysis on data 
+
+```{r}
+summary(Age)
+summary(Time)
+```
+Contingency tables for categorical data
+```{r}
+## Contigency table for Gender Vs Cure Status
+table(Gender,Cure_Status)
+
+
+## Contigency table for Gender Vs Censoring
+table(Gender,Censoring)
+
+
+## Contigency table for Cure status Vs Cure Status
+table(Cure_Status,Censoring)
+
+```
+
+```{r}
+boxplot(Age)
+boxplot(Time)
+hist(Censoring)
+hist(Gender)
+```
+
+Import Libraries
+
+```{r}
+library(survival)
+library(survminer)
+library(eha)
+library("flexsurv")
+```
+```{r}
+k1<-survfit(Surv(Time,Censoring) ~ 1, data=data)
+plot(k1,col=c("purple","green","gold"))
+k2<-survfit(Surv(Time,Censoring) ~ Age, data=data)
+plot(k2)
+k3<-survfit(Surv(Time,Censoring) ~ Gender, data=data)
+k<-plot(k3,col=c("blue","red"),xlab="t",ylab="S(t)",mark.time=FALSE,lty=1:2)
+legend("topright",c("male","female"),lty=2:1,bty="n",col=c("blue","red"))
+
+k4<-survfit(Surv(Time,Censoring) ~ Age+Gender, data=data)
+plot(k4)
+median(k4$surv)
+```
+```{r}
+gh3<-flexsurvreg(Surv(Time,Censoring)~Age*Gender, data=data,dist="weibull")
+gh3
+gh4<-flexsurvreg(Surv(Time,Censoring)~Age*Gender, data=data,dist="gengamma")
+gh4
+gh5<-flexsurvreg(Surv(Time,Censoring)~Age*Gender, data=data,dist="llogis")
+gh5    
+gh6<-flexsurvreg(Surv(Time,Censoring)~Age*Gender, data=data,dist="exponential")
+gh6
+gh7<-flexsurvreg(Surv(Time,Censoring)~Age*Gender, data=data,dist="lnorm")
+gh7
+gh8<-flexsurvreg(Surv(Time,Censoring)~Age*Gender, data=data,dist="gompertz")
+gh8
+gh9<-flexsurvreg(Surv(Time,Censoring)~Age*Gender, data=data,dist="genf.orig")
+gh9
+gh10<-flexsurvreg(Surv(Time,Censoring)~Age*Gender, data=data,dist="genf")
+gh10
+plot(gh4)
+```
+
+```{r}
+th3<-flexsurvreg(Surv(Time,Censoring)~Age+Gender, data=data,dist="weibull")
+th3
+th4<-flexsurvreg(Surv(Time,Censoring)~Age+Gender, data=data,dist="gengamma")
+th4
+th9<-flexsurvreg(Surv(Time,Censoring)~Age+Gender, data=data,dist="gamma")
+th9
+z1<-0.01766/0.00578
+2*pnorm(-abs(z1))
+z2<--0.34140/0.13388
+2*pnorm(-abs(z2))
+th5<-flexsurvreg(Surv(Time,Censoring)~Age+Gender, data=data,dist="llogis")
+th5    
+th6<-flexsurvreg(Surv(Time,Censoring)~Age+Gender, data=data,dist="exponential")
+th6
+z1<-0.01808/0.00845
+2*pnorm(-abs(z1))
+z2<--0.34264/0.19545
+2*pnorm(-abs(z2))
+th7<-flexsurvreg(Surv(Time,Censoring)~Age+Gender, data=data,dist="lnorm")
+th7
+th8<-flexsurvreg(Surv(Time,Censoring)~Age+Gender, data=data,dist="gompertz")
+th8
+zs<-0.02868/0.00881
+2*pnorm(-abs(zs))
+th9<-flexsurvreg(Surv(Time,Censoring)~Age+Gender, data=data,dist="genf.orig")
+th9
+th10<-flexsurvreg(Surv(Time,Censoring)~Age+Gender, data=data,dist="genf")
+th10
+z11<--0.0177/0.00592
+2*pnorm(-abs(z11))
+z12<-0.342/0.134
+2*pnorm(-abs(z12))
+plot(th4)
+```
+```{r}
+cox<-coxph(Surv(Time,Censoring)~Age+Gender,data=data)
+summary(cox)
+cox.zph(cox)
+AIC(cox)
+
+
+```
+
+```{r}
+library(muhaz)
+pot<-muhaz(Time,Censoring)
+pot
+plot(pot)
+summary(pot)
+```
